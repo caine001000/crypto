@@ -15,26 +15,6 @@ data "aws_ami" "amazon_linux_2023" {
   }
 }
 
-resource "aws_instance" "bastion" {
-  provider               = aws.singapore
-  ami                    = data.aws_ami.amazon_linux_2023.id
-  instance_type          = "t3.micro"
-  subnet_id              = aws_subnet.singapore_public.id
-  key_name               = aws_key_pair.singapore.key_name
-  vpc_security_group_ids = [aws_security_group.bastion.id]
-
-  user_data = <<-EOF
-              #!/bin/bash
-              echo "${tls_private_key.ssh_key.private_key_pem}" > /home/ec2-user/.ssh/id_rsa
-              chmod 400 /home/ec2-user/.ssh/id_rsa
-              chown ec2-user:ec2-user /home/ec2-user/.ssh/id_rsa
-              EOF
-
-  tags = {
-    Name = "singapore-bastion"
-  }
-}
-
 resource "null_resource" "get_fargate_ip" {
   provisioner "local-exec" {
     command = <<-EOT
